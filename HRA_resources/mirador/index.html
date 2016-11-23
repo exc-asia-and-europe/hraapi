@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" type="text/css" href="build/mirador/css/mirador-combined.css">
+    <title>Mirador Viewer</title>
+    <style type="text/css">
+     #viewer {
+       width: 100%;
+       height: 100%;
+       position: fixed;
+     }
+     #loginDialog{
+      float:left;
+      position:absolute;
+      width: 26vw;
+      left: 37vw;
+      text-align:center;
+      background-color: rgba(255, 255, 255, 0.7);
+     }
+     #loggedIn{
+        display:none;
+      }
+    </style>
+    <script src="build/mirador/mirador.js"></script>
+    <script type="text/javascript">
+
+    var userData = null;
+    var miradorInstance = null;
+    var authToken = null;
+    var apiURL = "http://localhost:3000";
+
+    function updateManifestList() {
+      miradorInstance.viewer.data = [];
+      miradorInstance.viewer.manifestsPanel.manifestListItems = [];
+      miradorInstance.viewer.manifestsPanel.manifestListElement.empty();
+      miradorInstance.viewer.state.currentConfig.data = [];
+      miradorInstance.viewer.state.currentConfig.manifests = [];
+      getUserManifests().then(function(manifestList) {
+        manifestList.forEach(function(manifestUri) {
+          var url = apiURL + "/manifests/" +  encodeURIComponent(manifestUri);
+          miradorInstance.viewer.eventEmitter.publish('ADD_MANIFEST_FROM_URL', url);
+        });
+      });
+    };
+
+    function getUserManifests() {
+      var ajaxHeaders = {};
+      if (authToken) ajaxHeaders["x-access-token"] = authToken;
+
+      var settings = {
+        crossDomain: true,
+        url: apiURL + "/manifests/",
+        method: "GET",
+        headers: ajaxHeaders
+      }
+      return $.ajax(settings);
+    };
+
+    function miradorStart() {
+      getUserManifests().then(function(manifestList){
+        var manifests = [];
+        manifestList.forEach(function() {
+          manifests.push({ 
+            "manifestUri": this,
+            "location": "HRA API"
+          });
+        });
+        miradorInstance = new Mirador({
+          "id": "viewer",
+          "openManifestsPage": true,
+          "data": manifests,
+          "annotationEndpoint": { 
+            "name":"Hra Anno Endpoint", 
+            "module": "HraAnno",
+            "options": {}
+          }
+        });
+      });
+     };
+
+    function _doLogin() {
+      jQuery("#loginError").html("");
+      var userId = jQuery("#userId").val();
+      var settings = {
+        "async": true,
+        "crossDomain": true,
+        "url": apiURL + "/users/authenticate",
+        "method": "POST",
+        "headers": {
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        "data": {
+          "username": userId,
+          "password": jQuery("#password").val()
+        }
+      };
+      $.ajax(settings).done(function (response) {
+        jQuery("#loginName").html(response.message);
+        jQuery("#loginDialogMask").hide();
+        jQuery("#loggedIn").show();
+        authToken = response.token;
+        Mirador.HraAnno.prototype.user.authToken = response.token;
+        Mirador.HraAnno.prototype.user.id = userId;
+        updateManifestList();
+        miradorInstance.eventEmitter.publish("UserLoggedIn");
+      })
+      .fail(function(response) {
+        jQuery("#loginError").html(response.statusText);
+      });
+    };
+
+    function _doLogout() {
+      authToken = null;
+      Mirador.HraAnno.prototype.user.authToken = null;
+      Mirador.HraAnno.prototype.user.id = null;
+      jQuery("#loginName").html("");
+      jQuery("#loginDialogMask").show();
+      jQuery("#loggedIn").hide();
+      updateManifestList();
+      miradorInstance.eventEmitter.publish("UserLoggedOut");
+    };
+
+    $(document).ready(function(){
+      jQuery("#loginButton").on("mouseup", _doLogin);
+      jQuery("#logoutButton").on("mouseup", _doLogout);
+      miradorStart();
+      if(Mirador.HraAnno.prototype.user.authToken !== null){
+        jQuery("#loginDialog").show();
+      };
+    });
+
+    </script>
+  </head>
+  <body>
+    <div id="viewer"></div>
+    <div id="loginDialog" title="Login">
+      <div id="loginDialogMask">
+        <div>
+          <label for="userId">userId</label>
+          <input type="text" name="userId" id="userId" value="matthias.guth" class="text ui-widget-content ui-corner-all" />
+        </div>
+        <div>
+          <label for="password">Password</label>
+          <input type="password" name="password" id="password" class="text ui-widget-content ui-corner-all" />
+        </div>
+        <div>
+          <button type="button" id="loginButton">Login</button>
+        </div>
+        <div id="loginError"></div>
+      </div>
+      <div id="loggedIn">
+        <span id="loginName"></span>
+        <span>
+          <button type="button" id="logoutButton">Logout</button>
+        </span>
+      </div>
+    </div>
+  </body>
+</html>
