@@ -33,7 +33,7 @@ router.post('/oaAnno', token.check, function(req, res, next) {
           var storedAnno = post;
           if (err) next(err);
           //create permissions with full access for creating user and admin group
-          Permissions.createEntityPermissions(req, annoId, "sc:Canvas", function(err, post) {
+          Permissions.createEntityPermissions(req, annoId, "oa:Annotation", function(err, post) {
             if (err) return next(err);
             res.status(200);
             res.send(storedAnno.oaAnnotation);
