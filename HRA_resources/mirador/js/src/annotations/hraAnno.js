@@ -21,7 +21,7 @@
       dfd:       null,
       annotationsList: [],        
       windowID: null,
-      apiUrl: "localhost:3000",
+      apiUrl: "http://localhost:3000",
       eventEmitter: null,
       user: this.user
     }, options);
@@ -37,8 +37,8 @@
       'delete': 'delete'
     },
     user: {
-      authToken: null,
-      id: null,
+/*      authToken: null,*/
+/*      id: null,*/
       canvasAnnotationPermissions: {
         'read':   false,
         'create': false,
@@ -46,6 +46,22 @@
         'delete':  false
       }
     },
+    windowObj: null,
+    _waitForWindowRendering: function(windowId) {
+      var _this = this;
+      var windowObj = this._getWindowObject(windowId);
+      if(windowObj !== null) {
+        _this.windowObj = windowObj;
+        return;
+      }
+      else {
+        setTimeout(function() {
+          _this._waitForWindowRendering(windowId);
+          _this.eventEmitter.publish('windowRendered.' + windowId);
+        }, 200);
+      }
+    },
+
     _getWindowObject: function(windowID){
       var _this = this;
       var returnWindowObject = null;
@@ -64,28 +80,36 @@
       this.windowID = this.windowID?this.windowID:this.windowIDwindowID;
       this.options = options;
       this.eventEmitter.subscribe('currentCanvasIDUpdated.' + this.windowID, function(event, canvasId) {
+        var windowObject = _this._getWindowObject(_this.windowID);
         _this._updateCanvasPermissions(canvasId);
+        windowObject.getAnnotations();
       });
-
 
       this.eventEmitter.subscribe('UserLoggedIn', function() {
         var windowObject = _this._getWindowObject(_this.windowID);
         _this.eventEmitter.publish('currentCanvasIDUpdated.' + _this.windowID, windowObject.canvasID);
+        //reload the annotations
+        windowObject.getAnnotations();
+
 /*
         console.debug("user logged in");
 */      });
       this.eventEmitter.subscribe('UserLoggedOut', function() {
         var windowObject = _this._getWindowObject(_this.windowID);
         _this.eventEmitter.publish('currentCanvasIDUpdated.' + _this.windowID, windowObject.canvasID);
+        windowObject.getAnnotations();
+        
 /*
+
         console.debug("user logged OUT");
 */
       });
 
-/*      this.eventEmitter.subscribe('windowUpdated', function(event, windowId) {
-        console.debug("windowUpdated");
-        console.debug(windowId);
-      });*/
+      // update the canvas permissions once when window is finally rendered
+      this.eventEmitter.subscribe('windowRendered.' + this.windowID, function() {
+        _this._updateCanvasPermissions(_this.windowObj.canvasID);
+      });
+      this._waitForWindowRendering(this.windowID);
       console.info("HRA Anno endpoint initialized");
     },
 
@@ -98,13 +122,20 @@
       }
     },
 
+/*    _uuidGen: function() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+        return v.toString(16);
+      });
+    },
+*/
     //Search endpoint for all annotations with a given URI
     search: function(options, successCallback, errorCallback) {
       var _this = this;
       this.annotationsList = []; //clear out current list
 
       var ajaxHeaders = {};
-      if (_this.user.authToken) ajaxHeaders["x-access-token"] = _this.user.authToken;
+      if (authToken) ajaxHeaders["x-access-token"] = authToken;
 
       jQuery.ajax({
         url: this.apiUrl + "/annotations/searchCanvasAnnotations/" + encodeURIComponent(options.uri),
@@ -138,7 +169,7 @@
     deleteAnnotation: function(annotationID, successCallback, errorCallback) {
       var _this = this;
       var ajaxHeaders = {};
-      if (_this.user.authToken) ajaxHeaders["x-access-token"] = _this.user.authToken;
+      if (authToken) ajaxHeaders["x-access-token"] = authToken;
 
       jQuery.ajax({
         url: _this.apiUrl + "/annotations/oaAnno/" + encodeURIComponent(annotationID),
@@ -150,7 +181,6 @@
           _this.annotationsList = jQuery.grep(_this.annotationsList, function(value, index) {
             return value['@id'] !== annotationID;
           });
-          console.debug(_this.annotationsList);
           if (typeof successCallback === "function") {
             successCallback();
           }
@@ -176,7 +206,7 @@
       delete oaAnnotation.endpoint;
    
       var ajaxHeaders = {};
-      if (_this.user.authToken) ajaxHeaders["x-access-token"] = _this.user.authToken;
+      if (authToken) ajaxHeaders["x-access-token"] = authToken;
       jQuery.ajax({
         url: this.apiUrl + "/annotations/oaAnno/" + encodeURIComponent(annotationID),
         type: 'PUT',
@@ -186,6 +216,7 @@
         headers: ajaxHeaders,
         success: function(data) {
           oaAnnotation.endpoint = endpoint;
+          /*console.log(_this.annotationsList.length);*/
           if (typeof successCallback === "function") {
             successCallback(oaAnnotation);
           }
@@ -209,7 +240,7 @@
       delete oaAnnotation.endpoint;
 
       var ajaxHeaders = {};
-      if (_this.user.authToken) ajaxHeaders["x-access-token"] = _this.user.authToken;
+      if (authToken) ajaxHeaders["x-access-token"] = authToken;
       jQuery.ajax({
         url: this.apiUrl + "/annotations/oaAnno",
         type: 'POST',
@@ -237,8 +268,7 @@
     _updateCanvasPermissions: function(canvasId){
       var _this = this;
       var ajaxHeaders = {};
-      if (_this.user.authToken) ajaxHeaders["x-access-token"] = _this.user.authToken;
-
+      if (authToken) ajaxHeaders["x-access-token"] = authToken;
       jQuery.ajax({
         url: _this.apiUrl + "/users/permissionsFor/" + encodeURIComponent(canvasId),
         type: 'GET',
@@ -249,14 +279,39 @@
           _this.user.canvasAnnotationPermissions = data;
           var windowObject = _this._getWindowObject(_this.windowID);
           //Set visibility of annotations button
-          if(data.create){
-            //Anno creation allowed for current canvas
-            windowObject.focusModules.ImageView.hud.annoState.displayOn();
-            windowObject.element.find(".mirador-osd-annotations-layer").show();
+          var annoButton = windowObject.element.find(".mirador-osd-annotations-layer");
+
+          var enableVisibility = (data.read || data.modify || data.create);
+          if(enableVisibility){
+            if(!annoButton.is(":visible")){
+              annoButton.show();
+            }
           }else{
-            //Anno creatoin denied for current canvas
-            windowObject.focusModules.ImageView.hud.annoState.displayOff();
-            windowObject.element.find(".mirador-osd-annotations-layer").hide();
+            if(annoButton.is(":visible")){
+              annoButton.hide();
+            } 
+          }
+          
+          if(windowObject.focusModules.ImageView.hud.annoState.current !== "off"){
+            // If read or modify permissions: show the pointer
+            if(data.read || data.modify){
+              if(!windowObject.element.find(".mirador-osd-pointer-mode.hud-control").is(":visible")){
+                windowObject.element.find(".mirador-osd-pointer-mode.hud-control").show();
+              }
+            }else{
+              if(windowObject.element.find(".mirador-osd-pointer-mode.hud-control").is(":visible")){
+                windowObject.element.find(".mirador-osd-pointer-mode.hud-control").hide();
+              }
+            }
+
+            if(data.create){
+              windowObject.element.find(".mirador-osd-annotation-controls > .hud-control:not(.mirador-osd-annotations-layer):not(.mirador-osd-pointer-mode):not(:visible)").show();
+              //Anno creation allowed for current canvas
+              
+            }else{
+              //Anno creation denied for current canvas
+              windowObject.element.find(".mirador-osd-annotation-controls > .hud-control:not(.mirador-osd-annotations-layer):not(.mirador-osd-pointer-mode):visible").hide();
+            }
           }
         },
         error: function(msg) {

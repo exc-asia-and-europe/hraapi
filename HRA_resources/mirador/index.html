@@ -61,9 +61,10 @@
     function miradorStart() {
       getUserManifests().then(function(manifestList){
         var manifests = [];
-        manifestList.forEach(function() {
+        manifestList.forEach(function(manifestUri) {
+          var url = apiURL + "/manifests/" +  encodeURIComponent(manifestUri);
           manifests.push({ 
-            "manifestUri": this,
+            "manifestUri": url,
             "location": "HRA API"
           });
         });
@@ -101,8 +102,9 @@
         jQuery("#loginDialogMask").hide();
         jQuery("#loggedIn").show();
         authToken = response.token;
-        Mirador.HraAnno.prototype.user.authToken = response.token;
+/*        Mirador.HraAnno.prototype.user.authToken = response.token;
         Mirador.HraAnno.prototype.user.id = userId;
+*/
         updateManifestList();
         miradorInstance.eventEmitter.publish("UserLoggedIn");
       })
@@ -112,9 +114,10 @@
     };
 
     function _doLogout() {
+      /*remove the auth token*/
       authToken = null;
-      Mirador.HraAnno.prototype.user.authToken = null;
-      Mirador.HraAnno.prototype.user.id = null;
+/*      Mirador.HraAnno.prototype.user.authToken = null;
+      Mirador.HraAnno.prototype.user.id = null;*/
       jQuery("#loginName").html("");
       jQuery("#loginDialogMask").show();
       jQuery("#loggedIn").hide();
@@ -139,7 +142,15 @@
       <div id="loginDialogMask">
         <div>
           <label for="userId">userId</label>
-          <input type="text" name="userId" id="userId" value="matthias.guth" class="text ui-widget-content ui-corner-all" />
+          <input type="text" name="userId" id="userId" class="text ui-widget-content ui-corner-all" />
+        </div>
+        <div style="display:none;">
+          <label for="domain">domain</label>
+          <!--
+          <select name="domain" id="domain" class="ui-widget-content ui-corner-all">
+            <option selected="selected" value="@ad.uni-heidelberg.de">@ad.uni-heidelberg.de</option>
+          </select>
+          -->
         </div>
         <div>
           <label for="password">Password</label>
