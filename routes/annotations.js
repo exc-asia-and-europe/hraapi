@@ -33,7 +33,7 @@ router.post('/oaAnno', token.check, function(req, res, next) {
           var storedAnno = post;
           if (err) next(err);
           //create permissions with full access for creating user and admin group
-          Permissions.createEntityPermissions(req, annoId, "sc:Canvas", function(err, post) {
+          Permissions.createEntityPermissions(req, annoId, "oa:Annotation", function(err, post) {
             if (err) return next(err);
             res.status(200);
             res.send(storedAnno.oaAnnotation);
@@ -112,9 +112,10 @@ router.get('/searchCanvasAnnotations/:canvasid', token.check, function(req, res,
         res.json(annotations);
       });
     }else{
-      res.status(403);
+      res.json([]);
+/*      res.status(403);
       res.json("You don't have permissions to READ annotations to this entity");
-    }
+*/    }
   });
 });
 
