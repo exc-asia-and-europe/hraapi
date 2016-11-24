@@ -112,9 +112,10 @@ router.get('/searchCanvasAnnotations/:canvasid', token.check, function(req, res,
         res.json(annotations);
       });
     }else{
-      res.status(403);
+      res.json([]);
+/*      res.status(403);
       res.json("You don't have permissions to READ annotations to this entity");
-    }
+*/    }
   });
 });
 
