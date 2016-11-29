@@ -65,7 +65,7 @@ usersRouter.post('/verifyToken', token.check, function(req, res, next) {
 });
 
 usersRouter.get('/permissionsFor/:entityid', token.check, function(req, res, next) {
-  Permissions.getUserPermissionsForId(req.userMetadata.userId, req.params.entityid, function(err, post) {
+  Permissions.getUserPermissionsForId(req, req.params.entityid, function(err, post) {
     if (err) return next(err);
     res.json(post);
   }); 
