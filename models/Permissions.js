@@ -139,13 +139,30 @@ PermissionSchema.statics.getPermissionsEntry = function(forId, next){
 PermissionSchema.statics.addGroupPermissions = function(forId, groupId, permissionMatrix, next) {
 };
 
-PermissionSchema.statics.getUserPermissionsForId = function(userId, elementId, next) {
-    this.findOne({"for": elementId, "permissions.users.id": userId},{"_id": 0, "permissions.users.permissions": 1}, function(err, post) {
-        if (err) return next(err);
-        var result = [];
-        if (post) result = post.permissions.users[0].permissions;
-        next(null, result);
+PermissionSchema.statics.getUserPermissionsForId = function(req, elementId, next) {
+    var admin = false;
+    req.userMetadata.groups.local.forEach(function(group) {
+        if(group.id === "admins"){
+          admin = true;
+          return;
+        }
     });
+    if (admin){
+        return next(null, {
+            "read" : true,
+            "create" : true,
+            "modify" : true,
+            "delete" : true
+        });
+    }else{
+        var query = {"for": elementId, "permissions.users.id": req.userMetadata.userId};
+        this.findOne(query,{"_id": 0, "permissions.users.permissions": 1}, function(err, post) {
+            if (err) return next(err);
+            var result = [];
+            if (post) result = post.permissions.users[0].permissions;
+            next(null, result);
+        });
+    }
 };
 
 module.exports = mongoose.model('Permissions', PermissionSchema);
