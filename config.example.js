@@ -1,7 +1,21 @@
 module.exports = {
+	http:{
+		enable: true,
+		options: {
+			port:3000
+		}
+	},
+	https:{
+		enable: true,
+		options: {
+			key: fs.readFileSync('/path/to/key.pem', 'utf8'),
+			cert: fs.readFileSync('/path/to/cert.pem','utf8'),
+			passphrase: 'keyPassprase',
+			port: 3443
+		}
+	},
 	secret: '<<insertyoursecrethere>>',
-/*	'database': 'mongodb://localhost/hra-annos',
-*/	database:{
+	database:{
 		uri: 'localhost',
 		database: 'annotations',
 		port: '27017',

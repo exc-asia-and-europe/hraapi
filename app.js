@@ -9,7 +9,14 @@ var bodyParser = require('body-parser');
 var cors = require('express-cors')
 var morgan = require('morgan');
 var config = require('./config'); // get the config file
+var fs = require('fs');
 
+var http = require('http');
+var https = require('https');
+
+/*var privateKey  = 
+var certificate = fs.readFileSync('/home/samurai/cert.pem', 'utf8');
+*/
 
 var index = require('./routes/index');
 
@@ -74,6 +81,18 @@ app.use(function(req, res, next) {
   next(err);
 });
 
+if(config.https.enable){
+  https.createServer({
+    key: config.https.options.key,
+    cert: config.https.options.cert,
+    passphrase: config.https.options.passphrase
+  }, app).listen(config.https.options.port);
+}
+
+if(config.http.enable){
+  http.createServer(app).listen(config.http.port);
+};
+
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
@@ -84,5 +103,6 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
 
 module.exports = app;

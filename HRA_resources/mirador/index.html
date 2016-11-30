@@ -23,13 +23,13 @@
         display:none;
       }
     </style>
-    <script src="build/mirador/mirador.js"></script>
+    <script src="build/mirador/mirador.min.js"></script>
     <script type="text/javascript">
 
     var userData = null;
     var miradorInstance = null;
     var authToken = null;
-    var apiURL = "localhost:3000";
+    var apiURL = "http://localhost:3000";
 
     function updateManifestList() {
       miradorInstance.viewer.data = [];
@@ -84,7 +84,7 @@
     function _doLogin() {
       jQuery("#loginError").html("");
       var userId = jQuery("#userId").val();
-      var settings = {
+      var loginSettings = {
         "async": true,
         "crossDomain": true,
         "url": apiURL + "/users/authenticate",
@@ -97,7 +97,7 @@
           "password": jQuery("#password").val()
         }
       };
-      $.ajax(settings).done(function (response) {
+      $.ajax(loginSettings).done(function (response) {
         jQuery("#loginName").html(response.message);
         jQuery("#loginDialogMask").hide();
         jQuery("#loggedIn").show();
@@ -110,6 +110,8 @@
       })
       .fail(function(response) {
         jQuery("#loginError").html(response.statusText);
+      }).always(function(argument) {
+        $("#password").val("");
       });
     };
 
@@ -143,18 +145,19 @@
 
       // overwrite miradors Manifest constructor: add the token header to the ajax call
       Mirador.Manifest.prototype.init = function(manifestUri) {
-        var ajaxHeaders = {};
-        if (authToken) ajaxHeaders["x-access-token"] = authToken;
-        var _this = this;
-        this.request = jQuery.ajax({
+        var ajaxOptions = {
           url: manifestUri,
           dataType: 'json',
           async: true,
-          headers: ajaxHeaders
-        });
-
-        this.request.done(function(jsonLd) {
-          _this.jsonLd = jsonLd;
+          crossDomain:true,
+          headers: {
+          }
+        };
+        if (manifestUri.match("^" + apiURL) && authToken) ajaxOptions.headers["x-access-token"] = authToken;
+        var _this = this;
+        this.request = jQuery.ajax(ajaxOptions);
+        this.request.done(function(data, textStatus, jqXHR) {
+          _this.jsonLd = data;
         });
       };
 
@@ -169,27 +172,17 @@
     <div id="viewer"></div>
     <div id="loginDialog" title="Login">
       <div id="loginDialogMask">
-        <form id="loginForm">
-          <div>
-            <label for="userId">userId</label>
-            <input type="text" name="userId" id="userId" class="text ui-widget-content ui-corner-all" />
-          </div>
-          <div style="display:none;">
-            <label for="domain">domain</label>
-            <!--
-            <select name="domain" id="domain" class="ui-widget-content ui-corner-all">
-              <option selected="selected" value="@ad.uni-heidelberg.de">@ad.uni-heidelberg.de</option>
-            </select>
-            -->
-          </div>
-          <div>
-            <label for="password">Password</label>
-            <input type="password" name="password" id="password" class="text ui-widget-content ui-corner-all" />
-          </div>
-          <div>
-            <button type="button" id="loginButton">Login</button>
-          </div>
-        </form>
+        <div>
+          <label for="userId">userId</label>
+          <input type="text" name="userId" id="userId" value="" class="text ui-widget-content ui-corner-all" />
+        </div>
+        <div>
+          <label for="password">Password</label>
+          <input type="password" name="password" id="password" class="text ui-widget-content ui-corner-all" />
+        </div>
+        <div>
+          <button type="button" id="loginButton">Login</button>
+        </div>
         <div id="loginError"></div>
       </div>
       <div id="loggedIn">
