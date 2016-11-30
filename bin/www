@@ -17,18 +17,17 @@ var config = require('../config'); // get the config file
 var serverHttp = null,
   serverHttps = null;
 
+if(config.http.enable){
+  serverHttp = http.createServer(app).listen(config.http.options.port);
+};
+
 if(config.https.enable){
-  serverHttp = https.createServer({
+  serverHttps = https.createServer({
     key: config.https.options.key,
     cert: config.https.options.cert,
     passphrase: config.https.options.passphrase
   }, app).listen(config.https.options.port);
 }
-
-if(config.http.enable){
-  serverHttps = http.createServer(app).listen(config.http.options.port);
-};
-
 
 
 /*var port = normalizePort(process.env.PORT || '3000');
