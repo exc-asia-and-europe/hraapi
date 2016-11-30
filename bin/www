@@ -7,27 +7,46 @@
 var app = require('../app');
 var debug = require('debug')('hraapi:server');
 var http = require('http');
+var https = require('https');
+var config = require('../config'); // get the config file
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+var serverHttp = null,
+  serverHttps = null;
 
+if(config.https.enable){
+  serverHttp = https.createServer({
+    key: config.https.options.key,
+    cert: config.https.options.cert,
+    passphrase: config.https.options.passphrase
+  }, app).listen(config.https.options.port);
+}
+
+if(config.http.enable){
+  serverHttps = http.createServer(app).listen(config.http.options.port);
+};
+
+
+
+/*var port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+*/
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
-
+/*var server = http.createServer(app);
+*/
 /**
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+/*server.listen(port);*/
+serverHttp.on('error', onError);
+serverHttp.on('listening', onListening);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -82,7 +101,7 @@ function onError(error) {
  */
 
 function onListening() {
-  var addr = server.address();
+  var addr = serverHttp.address();
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
