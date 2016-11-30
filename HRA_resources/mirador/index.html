@@ -29,7 +29,7 @@
     var userData = null;
     var miradorInstance = null;
     var authToken = null;
-    var apiURL = "http://localhost:3000";
+    var apiURL = "localhost:3000";
 
     function updateManifestList() {
       miradorInstance.viewer.data = [];
@@ -126,39 +126,70 @@
     };
 
     $(document).ready(function(){
-      jQuery("#loginButton").on("mouseup", _doLogin);
-      jQuery("#logoutButton").on("mouseup", _doLogout);
+      jQuery("#userId").keypress(function(e) {
+        if(e.which == 13){
+          jQuery('#password').focus();
+          return false;
+        }
+      });
+      jQuery("#password").keypress(function(e) {
+        if(e.which == 13){
+          _doLogin();
+          return false;
+        }
+      });
+      jQuery("#loginButton").on("click", _doLogin);
+      jQuery("#logoutButton").on("click", _doLogout);
+
+      // overwrite miradors Manifest constructor: add the token header to the ajax call
+      Mirador.Manifest.prototype.init = function(manifestUri) {
+        var ajaxHeaders = {};
+        if (authToken) ajaxHeaders["x-access-token"] = authToken;
+        var _this = this;
+        this.request = jQuery.ajax({
+          url: manifestUri,
+          dataType: 'json',
+          async: true,
+          headers: ajaxHeaders
+        });
+
+        this.request.done(function(jsonLd) {
+          _this.jsonLd = jsonLd;
+        });
+      };
+
       miradorStart();
       if(Mirador.HraAnno.prototype.user.authToken !== null){
         jQuery("#loginDialog").show();
       };
     });
-
     </script>
   </head>
   <body>
     <div id="viewer"></div>
     <div id="loginDialog" title="Login">
       <div id="loginDialogMask">
-        <div>
-          <label for="userId">userId</label>
-          <input type="text" name="userId" id="userId" class="text ui-widget-content ui-corner-all" />
-        </div>
-        <div style="display:none;">
-          <label for="domain">domain</label>
-          <!--
-          <select name="domain" id="domain" class="ui-widget-content ui-corner-all">
-            <option selected="selected" value="@ad.uni-heidelberg.de">@ad.uni-heidelberg.de</option>
-          </select>
-          -->
-        </div>
-        <div>
-          <label for="password">Password</label>
-          <input type="password" name="password" id="password" class="text ui-widget-content ui-corner-all" />
-        </div>
-        <div>
-          <button type="button" id="loginButton">Login</button>
-        </div>
+        <form id="loginForm">
+          <div>
+            <label for="userId">userId</label>
+            <input type="text" name="userId" id="userId" class="text ui-widget-content ui-corner-all" />
+          </div>
+          <div style="display:none;">
+            <label for="domain">domain</label>
+            <!--
+            <select name="domain" id="domain" class="ui-widget-content ui-corner-all">
+              <option selected="selected" value="@ad.uni-heidelberg.de">@ad.uni-heidelberg.de</option>
+            </select>
+            -->
+          </div>
+          <div>
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" class="text ui-widget-content ui-corner-all" />
+          </div>
+          <div>
+            <button type="button" id="loginButton">Login</button>
+          </div>
+        </form>
         <div id="loginError"></div>
       </div>
       <div id="loggedIn">
