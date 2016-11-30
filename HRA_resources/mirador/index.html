@@ -169,27 +169,25 @@
     <div id="viewer"></div>
     <div id="loginDialog" title="Login">
       <div id="loginDialogMask">
-        <form id="loginForm">
-          <div>
-            <label for="userId">userId</label>
-            <input type="text" name="userId" id="userId" class="text ui-widget-content ui-corner-all" />
-          </div>
-          <div style="display:none;">
-            <label for="domain">domain</label>
-            <!--
-            <select name="domain" id="domain" class="ui-widget-content ui-corner-all">
-              <option selected="selected" value="@ad.uni-heidelberg.de">@ad.uni-heidelberg.de</option>
-            </select>
-            -->
-          </div>
-          <div>
-            <label for="password">Password</label>
-            <input type="password" name="password" id="password" class="text ui-widget-content ui-corner-all" />
-          </div>
-          <div>
-            <button type="button" id="loginButton">Login</button>
-          </div>
-        </form>
+        <div>
+          <label for="userId">userId</label>
+          <input type="text" name="userId" id="userId" class="text ui-widget-content ui-corner-all" />
+        </div>
+        <div style="display:none;">
+          <label for="domain">domain</label>
+          <!--
+          <select name="domain" id="domain" class="ui-widget-content ui-corner-all">
+            <option selected="selected" value="@ad.uni-heidelberg.de">@ad.uni-heidelberg.de</option>
+          </select>
+          -->
+        </div>
+        <div>
+          <label for="password">Password</label>
+          <input type="password" name="password" id="password" class="text ui-widget-content ui-corner-all" />
+        </div>
+        <div>
+          <button type="button" id="loginButton">Login</button>
+        </div>
         <div id="loginError"></div>
       </div>
       <div id="loggedIn">
