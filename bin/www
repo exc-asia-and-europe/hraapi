@@ -47,6 +47,9 @@ app.set('port', port);
 serverHttp.on('error', onError);
 serverHttp.on('listening', onListening);
 
+serverHttps.on('error', onErrorHttps);
+serverHttps.on('listening', onListeningHttps);
+
 /**
  * Normalize a port into a number, string, or false.
  */
@@ -76,9 +79,9 @@ function onError(error) {
     throw error;
   }
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+  var bind = typeof config.http.options.port === 'string'
+    ? 'Pipe ' + config.http.options.port
+    : 'Port ' + config.http.options.port;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
@@ -101,6 +104,45 @@ function onError(error) {
 
 function onListening() {
   var addr = serverHttp.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}
+
+/**
+ * Event listener for HTTPS server "error" event.
+ */
+
+function onErrorHttps(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof config.https.options.port === 'string'
+    ? 'Pipe ' + config.https.options.port
+    : 'Port ' + config.https.options.port;
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTPS server "listening" event.
+ */
+
+function onListeningHttps() {
+  var addr = serverHttps.address();
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
