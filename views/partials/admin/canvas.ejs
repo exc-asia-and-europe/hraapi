@@ -1,0 +1,45 @@
+<div class="panel panel-success">
+    <div class="panel-heading">
+        <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#collapse_<%= manifestIdx %>_<%= sequenceIdx %>" href="#collapse_<%= manifestIdx %>_<%= sequenceIdx %>_<%= canvasIdx %>">
+                <span class="glyphicon glyphicon-picture"></span><%= canvas['label'] %></a>
+        </h4>
+    </div>
+    <div data-canvasId="<%= canvas['@id'] %>" id="collapse_<%= manifestIdx %>_<%= sequenceIdx %>_<%= canvasIdx %>" class="display-canvas panel-collapse collapse">
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-10">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Title" value="<%= canvas['label'] %>" required />
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control" placeholder="description" rows="3" value="<%= canvas['description'] %>"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="padding: 20px;">
+                <!-- <div class="panel-group" style="padding: 20px;"> -->
+                <div class="col-md-3">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">Images</h4>
+                        </div>
+                        <div class="panel-body">  
+                            <% canvas.images.forEach(function(image, imageIdx){ %>
+                               <% include ../../partials/admin/image %>
+                            <% }) %>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div class="panel panel-warning annotations-data">
+                        <div class="panel-heading">
+                            <div class="panel-title">Annotations<span class="badge">0</span></a></div>
+                        </div>
+                        <div class="panel-body"></div>
+                    </div>
+                </div>
+            </div>            
+        </div>
+    </div>
+</div>

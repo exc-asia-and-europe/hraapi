@@ -1,0 +1,22 @@
+<div class="panel panel-info">
+    <div class="panel-heading">
+        <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#collapse_<%= manifestIdx %>" href="#collapse_<%= manifestIdx %>_<%= sequenceIdx %>">
+                <span class="glyphicon glyphicon-sort-by-order"></span><%= sequence['label'] || sequence['@id'] %>
+            </a>
+        </h4>
+    </div>
+    <div id="collapse_<%= manifestIdx %>_<%= sequenceIdx %>" class="panel-collapse collapse in">
+        <div class="panel-body">
+            <div class="row">
+            </div>
+            <div class="row">
+                <div class="panel-group" style="padding: 20px;">
+                    <% sequence.canvases.forEach(function(canvas, canvasIdx){ %>
+                       <% include ../../partials/admin/canvas %>
+                    <% }) %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

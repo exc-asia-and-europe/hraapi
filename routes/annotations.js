@@ -5,10 +5,11 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var token = require('../token');
 var uuid = require('node-uuid');
-var tools = require('../tools.js');
+var Tools = require('../tools.js');
 var Annotations = require('../models/Annotations.js');
 var Permissions = require('../models/Permissions.js');
 var bodyParser = require('body-parser');
+var DOMParser = require('xmldom').DOMParser;
 
 var jsonParser = bodyParser.json();
 // create application/x-www-form-urlencoded parser
@@ -26,7 +27,7 @@ router.post('/oaAnno', token.check, function(req, res, next) {
             createdBy: req.userMetadata.userId,
             oaAnnotation: req.body
           };
-        var annoId = tools.fullUrl(req) + "/" + uuid();
+        var annoId = Tools.fullUrl(req) + "/" + uuid();
         anno.oaAnnotation["@id"] = annoId;
         //Create the annotation
         Annotations.create(anno, function (err, post) {
@@ -48,6 +49,7 @@ router.post('/oaAnno', token.check, function(req, res, next) {
     next(err);
   }
 });
+
 
 /* GET /annotations/:id */
 // Get the annotation by id
@@ -118,5 +120,54 @@ router.get('/searchCanvasAnnotations/:canvasid', token.check, function(req, res,
 */    }
   });
 });
+
+/* GET /annotations/canvasAnno:id */
+// Frontend: Display the annotation
+router.get('/displayAnno/:id/:format?', token.check, function(req, res, next) {
+  Permissions.getUserPermissionsForId(req, req.params.id, function(err, permissions){
+    if (err) return next(err);
+    if(typeof(permissions.read) !== "undefined" && permissions.read === true){
+      Annotations.getAnnotationData(req.params.id, function(err, annoData) {
+        if (err) return next(err);
+/*        console.log(annoData);*/
+
+        switch(req.params.format){
+          case "json":
+            res.json(annoData);
+            break;
+          case "annoInlinePreview":
+            var regionString = annoData.boundingBox.left + "," + annoData.boundingBox.top + "," + annoData.boundingBox.width + "," + annoData.boundingBox.height;
+            var imgThumbnailIIIFUri = annoData.iiifBaseUri + "/" + regionString + "/!200,200/0/default.jpg";
+            annoData.imgThumbnailIIIFUri = imgThumbnailIIIFUri;
+            res.render('partials/annotations/annoInlinePreview', annoData);
+            break;
+          default:
+            res.render('pages/displaySingleAnnotation', annoData);
+        }
+      });
+    }else{
+      res.status(403)
+      res.end();
+    }
+  })
+});
+
+/* GET /annotations/displayAnno:id */
+// Frontend: Display the annotation
+/*router.get('/displayAnno/:id', token.check, function(req, res, next) {
+  Permissions.getUserPermissionsForId(req, req.params.id, function(err, permissions){
+    if (err) return next(err);
+    if(typeof(permissions.read) !== "undefined" && permissions.read === true){
+      Annotations.getAnnotationData(req.params.id, function(err, annoData) {
+        if (err) return next(err);
+        res.render('pages/displaySingleAnnotation', annoData);
+      });
+    }else {
+      res.status(403)
+      res.end();
+    }
+  });
+});*/
+
 
 module.exports = router;

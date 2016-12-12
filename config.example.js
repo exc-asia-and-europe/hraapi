@@ -1,6 +1,7 @@
 var fs = require('fs');
 
 module.exports = {
+	secret: '<<insertyoursecrethere>>',
 	http:{
 		enable: true,
 		options: {
@@ -16,7 +17,6 @@ module.exports = {
 			port: 3443
 		}
 	},
-	secret: '<<insertyoursecrethere>>',
 	database:{
 		uri: 'localhost',
 		database: 'annotations',
@@ -24,6 +24,10 @@ module.exports = {
 		user: null,
 		password: null
 	},
+	corsAllowedHosts: [
+		'http://127.0.0.1:8000',
+		'https://127.0.0.1:8443'
+	],
 	ldapIdSuffix: '@ad.mycompany.com',
 	ldapStrategyOpts: {
 		server: {

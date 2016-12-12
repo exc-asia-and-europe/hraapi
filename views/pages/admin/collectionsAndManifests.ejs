@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../partials/head %>
+</head>
+<body class="container">
+    <header>
+        <div class="col-md-12">
+            <% include ../../partials/header %>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <% include ../../partials/admin/permissions %>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel-group" id="accordion">
+                    <% manifests.forEach(function(manifest, manifestIdx){ %>
+                       <% include ../../partials/admin/manifest %>
+                    <% }) %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!--         <div class="row">
+            <div class="col-md-12">
+                <div id="manifestsAccordion" role="tablist" aria-multiselectable="true">
+                    <% manifests.forEach(function(manifest, idx){ %>
+                    <div class="card">
+                        <div class="card-header" role="tab" id="headingOne">
+                            <h5 class="mb-0">
+                                <a data-toggle="collapse" data-parent="#manifestsAccordion" href="#collapse_<%= idx %>" aria-expanded="true" aria-controls="collapse_<%= idx %>">
+                                    <%= manifest['@id'] %>
+                                </a>
+                            </h5>
+                        </div>
+                        <div id="collapse_<%= idx %>" class="collapse" role="tabpanel" aria-labelledby="collapse_<%= idx %>">
+                            <div class="card-block">
+                                <div><%= manifest %></div>
+                            </div>
+                        </div>
+                    </div>
+                    <% }) %>
+                </div>
+            </div>
+        </div>
+ -->    
+    </main>
+
+    <footer>
+        <% include ../../partials/footer %>
+    </footer>
+    
+</body>
+</html>

@@ -23,7 +23,7 @@
         display:none;
       }
     </style>
-    <script src="build/mirador/mirador.min.js"></script>
+    <script src="build/mirador/mirador.js"></script>
     <script type="text/javascript">
 
     var userData = null;
@@ -51,6 +51,9 @@
 
       var settings = {
         crossDomain: true,
+        xhrFields: {
+          withCredentials: true
+        },
         url: apiURL + "/manifests/",
         method: "GET",
         headers: ajaxHeaders
@@ -87,6 +90,9 @@
       var loginSettings = {
         "async": true,
         "crossDomain": true,
+        xhrFields: {
+          withCredentials: true
+        },
         "url": apiURL + "/users/authenticate",
         "method": "POST",
         "headers": {
@@ -101,10 +107,8 @@
         jQuery("#loginName").html(response.message);
         jQuery("#loginDialogMask").hide();
         jQuery("#loggedIn").show();
-        authToken = response.token;
-/*        Mirador.HraAnno.prototype.user.authToken = response.token;
-        Mirador.HraAnno.prototype.user.id = userId;
-*/
+/*        authToken = response.token;*/
+
         updateManifestList();
         miradorInstance.eventEmitter.publish("UserLoggedIn");
       })
@@ -115,17 +119,38 @@
       });
     };
 
-    function _doLogout() {
-      /*remove the auth token*/
-      authToken = null;
-/*      Mirador.HraAnno.prototype.user.authToken = null;
-      Mirador.HraAnno.prototype.user.id = null;*/
-      jQuery("#loginName").html("");
-      jQuery("#loginDialogMask").show();
-      jQuery("#loggedIn").hide();
-      updateManifestList();
-      miradorInstance.eventEmitter.publish("UserLoggedOut");
+    function _checkLogin() {
+      var ajaxOptions = {
+        async: true,
+        crossDomain: true,
+        xhrFields: {
+          withCredentials: true
+        },
+        url: apiURL + "/users/checkLogin",
+        method: "GET",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+        }
+      };
+      return $.ajax(ajaxOptions);
     };
+
+    function _doLogout() {
+      var options = {
+        url: apiURL + "/users/logout",
+        xhrFields: {
+          withCredentials: true
+        }
+      }
+      $.get(options).done(function (response) {
+        jQuery("#loginName").html("");
+        jQuery("#loginDialogMask").show();
+        jQuery("#loggedIn").hide();
+        updateManifestList();
+        miradorInstance.eventEmitter.publish("UserLoggedOut");
+      });
+    };
+
 
     $(document).ready(function(){
       jQuery("#userId").keypress(function(e) {
@@ -150,21 +175,34 @@
           dataType: 'json',
           async: true,
           crossDomain:true,
-          headers: {
+          xhrFields: {
           }
         };
-        if (manifestUri.match("^" + apiURL) && authToken) ajaxOptions.headers["x-access-token"] = authToken;
+        if (manifestUri.match("^" + apiURL)){
+          ajaxOptions.xhrFields.withCredentials = true;
+        } 
+        /*
+          if (manifestUri.match("^" + apiURL) && authToken){
+          ajaxOptions.headers["x-access-token"] = authToken;*/
+        
         var _this = this;
         this.request = jQuery.ajax(ajaxOptions);
         this.request.done(function(data, textStatus, jqXHR) {
           _this.jsonLd = data;
         });
       };
+      _checkLogin().then(function(response) {
+        console.debug(response);
+        if(response.result === true){
+          jQuery("#loginName").html(response.message);
+          jQuery("#loginDialogMask").hide();
+          jQuery("#loggedIn").show();
+        }else{
+          jQuery("#loginDialog").show();
+        }
 
-      miradorStart();
-      if(Mirador.HraAnno.prototype.user.authToken !== null){
-        jQuery("#loginDialog").show();
-      };
+        miradorStart();
+      });
     });
     </script>
   </head>
@@ -175,6 +213,14 @@
         <div>
           <label for="userId">userId</label>
           <input type="text" name="userId" id="userId" value="" class="text ui-widget-content ui-corner-all" />
+        </div>
+        <div style="display:none;">
+          <label for="domain">domain</label>
+          <!--
+          <select name="domain" id="domain" class="ui-widget-content ui-corner-all">
+            <option selected="selected" value="@ad.uni-heidelberg.de">@ad.uni-heidelberg.de</option>
+          </select>
+          -->
         </div>
         <div>
           <label for="password">Password</label>

@@ -1,0 +1,15 @@
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6 col-md-4 col-md-offset-4 login-form" style="<%= (userMetadata && userMetadata.userId !== 'guest')?'display:none;':'' %>">
+            <h1 class="text-center login-title">Login</h1>
+            <input type="text" class="form-control login-username" placeholder="Username" required autofocus>
+            <input type="password" class="form-control login-password" placeholder="Password" required>
+            <button class="btn btn-lg btn-primary btn-block login-send" type="button">Login</button>
+            <div style="display:none;" class="alert alert-danger login-failed" role="alert">
+  				<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+  				<span class="sr-only">Error:</span>
+  					Login failed.
+				</div>
+        </div>
+    </div>
+</div>

@@ -12,14 +12,7 @@ var UserSchema = new mongoose.Schema({
 );
 
 UserSchema.statics.checkAdmin = function(req, res, next) {
-  var admin = false;
-  req.userMetadata.groups.local.forEach(function(group) {
-    if(group.id === "admins"){
-      admin = true;
-      return;
-    }
-  });
-  if(admin) return next();
+  if(req.userMetadata.admin) return next();
   res.status(403);
   res.send("admins only!");
 };

@@ -1,0 +1,35 @@
+<!-- views/partials/header.ejs -->
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">
+                <span class="glyphicon glyphicon glyphicon-tree-deciduous"></span>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li><a href="/">Home</a></li>
+                <% if(userMetadata.admin) { %>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Admin<span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/admin/collectionsAndManifests">Collections/Manifests</a></li>
+                        <li><a href="/admin/userAndGroups">Users/Groups</a></li>
+                    </ul>
+                </li>
+                <% } %>
+                <li><a href="/about">About</a></li>
+            </ul>
+            <% if(userMetadata.userId !== "guest") { %>
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <span><%= userMetadata.fullName %></span>
+                    <button type="button" class="btn btn-default navbar-btn login-logout-send">Logout</button>
+                </li>
+            </ul>
+            <% } %>
+        </div>      
+    </div>
+</nav>
