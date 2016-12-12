@@ -1,0 +1,45 @@
+<div class="modal fade" id="permissionsModal" tabindex="-1" role="dialog" aria-labelledby="permissionsModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="permissionsModalLabel">Set Permissions</h4>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="input-group input-group-sm">
+              <span class="input-group-addon" id="permissions-entityid-label">@id</span>
+              <input type="text" class="form-control" id="permissions-entityId" aria-describedby="permissions-entityid-label" readonly="readonly"></input>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="input-group input-group-sm">
+              <span class="input-group-addon" id="permissions-entitytype-label">type</span>
+              <input type="text" class="form-control" id="permissions-entitytype" aria-describedby="permissions-entitytype-label" readonly="readonly" />
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">&nbsp;</div>
+        </div>
+        <div class="row">
+          <div class="col-md-12 loader text-center" style="display:none" >
+            <img src="/images/packman-loader.gif"/>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12" id="permissions-list"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">
+          <span class="glyphicon glyphicon-save"></span>Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

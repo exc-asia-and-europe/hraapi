@@ -1,0 +1,97 @@
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#accordion" href="#collapse_<%= manifestIdx %>">
+                <span class="glyphicon glyphicon-file"></span><%= manifest['label'] %>
+            </a>
+            <div class="input-group pull-right">
+                <a role="button" class="permissions-show" style="color:inherit;" data-toggle="modal" data-target="#permissionsModal" data-entityId="<%= manifest['@id'] %>">
+                    <span class="glyphicon glyphicon-user"></span>
+                </a>
+            </div>
+        </h4>
+    </div>
+    <div id="collapse_<%= manifestIdx %>" class="panel-collapse collapse">
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-10">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Title" value="<%= manifest.label %>" required />
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control" placeholder="description" rows="3" value="<%= manifest.description %>"></textarea>
+                    </div>
+                </div>
+                <div class="col-md-2 media-object pull-left">
+                    <p>
+                    <% if (manifest.logo) { %>
+                        <img class="col-md-12 media-object" src="<%= manifest.logo %>" />
+                    <% } %>
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="viewingDirection">viewing Direction</label>
+                        <select class="form-control" id="viewingDirection">
+                            <% manifestStatics.viewingDirection.forEach(function(vd){ %>
+                                <option value="<%= vd.value %>" <% if(vd.value === manifest.viewingDirection){ %> selected="selected" <% } %> ><%= vd.label %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="viewingHint">viewing Hint</label>
+                        <select class="form-control" id="viewingHint">
+                            <% manifestStatics.viewingHint.forEach(function(vh){ %>
+                                <option value="<%= vh.value %>" <% if(vh.value === manifest.viewingHint){ %> selected="selected" <% } %> ><%= vh.label %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="panel-group" style="padding: 20px;">
+                    <% manifest.sequences.forEach(function(sequence, sequenceIdx){ %>
+                       <% include ../../partials/admin/sequence %>
+                    <% }) %>
+
+                </div>
+            </div>
+<!--                <div class="row">
+                <div class="col-md-6">
+                    <div class="well well-sm">
+                        <div class="input-group">
+                            <span class="input-group-addon">www.jquery2dotnet.com/</span>
+                            <input type="text" class="form-control" placeholder="Custom url" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="well well-sm well-primary">
+                        <form class="form form-inline " role="form">
+                        <div class="form-group">
+                            <input type="text" class="form-control" value="" placeholder="Date" required />
+                        </div>
+                        <div class="form-group">
+                            <select class="form-control">
+                                <option>Draft</option>
+                                <option>Published</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <span class="glyphicon glyphicon-floppy-disk"></span>Save</button>
+                            <button type="button" class="btn btn-default btn-sm">
+                                <span class="glyphicon glyphicon-eye-open"></span>Preview</button>
+                        </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+-->
+        </div>
+    </div>
+</div>

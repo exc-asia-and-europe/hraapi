@@ -132,6 +132,14 @@ PermissionSchema.statics.setUserPermissions = function(forId, userId, permission
 PermissionSchema.statics.getPermissionsEntry = function(forId, next){
     this.findOne({"for": forId},{"_id": 0}, function(err, post) {
         if (err) return next(err);
+        if (post === null){
+            post = {
+                permissions:{
+                    groups:[],
+                    users:[]
+                }
+            }
+        }
         return next(null, post);
     });
 };
@@ -140,14 +148,8 @@ PermissionSchema.statics.addGroupPermissions = function(forId, groupId, permissi
 };
 
 PermissionSchema.statics.getUserPermissionsForId = function(req, elementId, next) {
-    var admin = false;
-    req.userMetadata.groups.local.forEach(function(group) {
-        if(group.id === "admins"){
-          admin = true;
-          return;
-        }
-    });
-    if (admin){
+    console.log(req.userMetadata.admin);
+    if (req.userMetadata.admin){
         return next(null, {
             "read" : true,
             "create" : true,

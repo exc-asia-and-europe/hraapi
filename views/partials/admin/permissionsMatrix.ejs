@@ -1,0 +1,34 @@
+<div class="col-md-12">
+	<div class="col-md-2">
+		<div class="checkbox">
+    		<label>
+				<input type="checkbox" aria-label="read-checkbox" class="permission-read" checked="<%= permissionEntry.permissions.read?'checked':'' %>" />read
+			</label>
+		</div>
+	</div>
+	<div class="col-md-1">&nbsp;</div>
+	<div class="col-md-2">
+		<div class="checkbox">
+    		<label>
+				<input type="checkbox" aria-label="create-checkbox" class="permission-create" checked="<%= permissionEntry.permissions.create?'checked':'' %>" />create
+			</label>
+		</div>
+	</div>
+	<div class="col-md-1">&nbsp;</div>
+	<div class="col-md-2">
+		<div class="checkbox">
+    		<label>
+				<input type="checkbox" aria-label="modify-checkbox" class="permission-modify" checked="<%= permissionEntry.permissions.modify?'checked':'' %>" />modify
+			</label>
+		</div>
+	</div>
+	<div class="col-md-1">&nbsp;</div>
+	<div class="col-md-2">
+		<div class="checkbox">
+    		<label>
+				<input type="checkbox" aria-label="delete-checkbox" class="permission-delete" checked="<%= permissionEntry.permissions.delete?'checked':'' %>" />delete
+			</label>
+		</div>
+	</div>
+	<div class="col-md-1">&nbsp;</div>
+</div>

@@ -1,0 +1,58 @@
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<span class="glyphicon glyphicon-th-list"></span><span class="glyphicon glyphicon-user"></span> Groups <span class="badge"><%= permissions.groups.length || 0 %></span>
+        <div class="input-group pull-right">
+            <a role="button" style="color:inherit;">
+                <span class="glyphicon glyphicon-plus permission-add-group"></span>
+            </a>
+       	</div>
+    </div>
+	<div class="panel-body">
+		<% if(permissions) {%>
+		<% permissions.groups.forEach(function(permissionEntry, idx){ %>
+		<div class="panel panel-default">
+			<div class="panel-heading"><%= permissionEntry.id %></div>
+			<div class="panel-body">
+				<div class="col-md-12">
+        		<% include permissionsMatrix %>
+        		</div>
+        	</div>
+        </div>
+		<% }) %>
+		<% } %>
+	</div>
+</div>
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<span class="glyphicon glyphicon-user"></span> Users <span class="badge"><%= permissions.users.length || 0 %></span>
+        <div class="input-group pull-right">
+            <a role="button" style="color:inherit;">
+                <span class="glyphicon glyphicon-plus permission-add-user"></span>
+            </a>
+       	</div>
+	</div>
+	<div class="panel-body">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<input type="text" class="ldap-search-user"/>
+			</div>
+			<div class="panel-body">
+				<div class="col-md-12">
+        		<!--<%- include('permissionsMatrix', {permissionEntry = default}) %>-->
+        		</div>
+        	</div>
+        </div>
+		<% if(permissions) {%>
+		<% permissions.users.forEach(function(permissionEntry, idx){ %>
+		<div class="panel panel-default">
+			<div class="panel-heading"><%= permissionEntry.id %></div>
+			<div class="panel-body">
+				<div class="col-md-12">
+        		<% include permissionsMatrix %>
+        		</div>
+        	</div>
+        </div>
+		<% }) %>
+		<% } %>
+	</div>
+</div>

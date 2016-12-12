@@ -9,6 +9,8 @@ var bodyParser = require('body-parser');
 var cors = require('express-cors')
 var morgan = require('morgan');
 var config = require('./config'); // get the config file
+var url = require('url');
+var util = require('util');
 
 var index = require('./routes/index');
 
@@ -16,10 +18,12 @@ var LdapStrategy = require('passport-ldapauth');
 var passport = require('passport');
 
 
+var admin = require('./routes/admin');
 var annotations = require('./routes/annotations');
 var users = require('./routes/users');
 var manifests = require('./routes/manifests');
 var tests = require('./routes/tests');
+
 
 // connect to MongoDB
 var connectString = 'mongodb://';
@@ -43,24 +47,26 @@ app.set('view engine', 'ejs');
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser(config.secret));
 app.use(express.static(path.join(__dirname, 'public')));
 
+/*app.use('js', express.static(path.join(__dirname, 'public/javascripts')));
+app.use('css', express.static(path.join(__dirname ,'public/stylesheets')));
+*/
 app.use(passport.initialize());
 
 app.use(function(req, res, next) {
-/*    if ('OPTIONS' == req.method || 'GET' == req.method) {*/
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'user-agent, Content-Type, Authorization, Content-Length, X-Requested-With, x-access-token');
-      /*res.sendStatus(200);*/
-/*    }
-    else {
-    }*/
-      next();
+  if(config.corsAllowedHosts.indexOf(req.headers.origin) !== -1) {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'user-agent, Content-Type, Authorization, Content-Length, X-Requested-With, x-access-token');
+  }
+  next();
 });
 
 app.use('/', index);
+app.use('/admin', admin);
 app.use('/annotations', annotations);
 app.use('/users', users);
 app.use('/manifests', manifests);

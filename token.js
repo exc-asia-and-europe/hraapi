@@ -3,12 +3,13 @@ var config = require('./config'); // get our config file
 
 module.exports = {
 	check: function(req, res, next) {
-		if(req.headers["x-access-token"]){
-			var token = req.headers["x-access-token"];
+		if(req.signedCookies['x-access-token'] || req.body.token || req.query.token || req.headers["x-access-token"]){
+			var token = req.signedCookies['x-access-token'] || req.body.token || req.query.token || req.headers["x-access-token"];
 			jwt.verify(token, config.secret, function(err, decoded) {
 		    	if (err) return next(err);
 		    	/*console.log("%j", decoded);*/
 				req.userMetadata = decoded;
+				res.locals.userMetadata = req.userMetadata;
 	    		next();
 			});
 		}else{
@@ -22,6 +23,7 @@ module.exports = {
 	      			local: []
     			}
 			};
+			res.locals.userMetadata = req.userMetadata;
 			return next();
 		}
 		

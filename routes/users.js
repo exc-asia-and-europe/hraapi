@@ -12,6 +12,7 @@ var Users = require('../models/Users.js');
 var Groups = require('../models/Groups.js');
 var Permissions = require('../models/Permissions.js');
 var bodyParser = require('body-parser');
+/*var LDAP = require('ldap-client');*/
 
 var jsonParser = bodyParser.json();
 // create application/x-www-form-urlencoded parser
@@ -26,6 +27,11 @@ function fullUrl(req) {
     pathname: req.originalUrl
   });
 };
+
+usersRouter.get('/logout', function(req, res) {
+  res.clearCookie('x-access-token');
+  res.send("logged out");
+});
 
 usersRouter.post('/authenticate', passport.authenticate('ldapauth', {session: false}), function(req, res) {
   var userMetadata = {
@@ -42,18 +48,46 @@ usersRouter.post('/authenticate', passport.authenticate('ldapauth', {session: fa
   // get local groups
   Groups.getUserGroups(req, res, function(err, req, res, next) {
     if (err) return next(err);
+    req.userMetadata.admin = false;  
+    req.userMetadata.groups.local.forEach(function(group) {
+      if(group.id === "admins"){
+        req.userMetadata.admin = true;
+      }
+    });
     // create a token
     var token = jwt.sign(userMetadata, config.secret, {
       expiresIn: "24h" // expires in 24 hours
     });
+    // store cookie
+    let options = {
+        maxAge: 1000 * 60 * 60 * 24, // would expire after 24h
+        expires: 0,
+/*        maxAge: 0, // would expire after 24h*/
+        httpOnly: true, // The cookie only accessible by the web server
+        signed: true // Indicates if the cookie should be signed
+    }
+    
+    res.cookie('x-access-token', token, options)
     res.json({
       /*metadata: userMetadata,*/
-      message: "welcome " + userMetadata.fullName,
+      message: "Welcome back, " + userMetadata.fullName,
       token: token
     });
   });
 });
 
+usersRouter.get('/checkLogin', token.check, function(req, res, next) {
+  if(typeof(req.userMetadata) !== "undefined" && req.userMetadata.userId !== "guest"){
+    res.json({
+      "result": true,
+      "message": "Welcome back, " + req.userMetadata.fullName
+    });
+  }else{
+    res.send({
+      "result": false
+    });
+  }
+});
 
 usersRouter.post('/verifyToken', token.check, function(req, res, next) {
   if(typeof(req.userMetadata) !== "undefined"){
@@ -98,5 +132,17 @@ usersRouter.post('/admin/setUserPermissions', token.check, Users.checkAdmin, url
     else res.json(post);
   });
 });
+
+/*usersRouter.post('/searchUser', token.check, Users.checkadmin, function(req, res, next) {
+  if (err) return next(err);
+  var ldapOptions = {
+    uri: config.ldapStrategyOpts.server.url,
+    base: config.ldapStrategyOpts.server.searchBase,
+    attrs: '*'    
+  };
+  var ldap = new LDAP(options, function(err) {
+    if (err) return next(err);
+  });
+});*/
 
 module.exports = usersRouter;

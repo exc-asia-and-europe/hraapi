@@ -21,7 +21,7 @@
       dfd:       null,
       annotationsList: [],        
       windowID: null,
-      apiUrl: "http://localhost:3000",
+      apiUrl: "https://localhost:3443",
       eventEmitter: null,
       user: this.user
     }, options);
@@ -37,8 +37,6 @@
       'delete': 'delete'
     },
     user: {
-/*      authToken: null,*/
-/*      id: null,*/
       canvasAnnotationPermissions: {
         'read':   false,
         'create': false,
@@ -107,6 +105,7 @@
 
       // update the canvas permissions once when window is finally rendered
       this.eventEmitter.subscribe('windowRendered.' + this.windowID, function() {
+        console.debug("window rendering completed");
         _this._updateCanvasPermissions(_this.windowObj.canvasID);
       });
       this._waitForWindowRendering(this.windowID);
@@ -134,15 +133,15 @@
       var _this = this;
       this.annotationsList = []; //clear out current list
 
-      var ajaxHeaders = {};
-      if (authToken) ajaxHeaders["x-access-token"] = authToken;
-
-      jQuery.ajax({
+       jQuery.ajax({
         url: this.apiUrl + "/annotations/searchCanvasAnnotations/" + encodeURIComponent(options.uri),
         type: 'GET',
         dataType: 'json',
         contentType: "application/json; charset=utf-8",
-        headers: ajaxHeaders,
+        crossDomain: true,
+        xhrFields: {
+          withCredentials: true
+        },
         success: function(data) {
           if (typeof successCallback === "function") {
             successCallback(data);
@@ -168,19 +167,22 @@
     
     deleteAnnotation: function(annotationID, successCallback, errorCallback) {
       var _this = this;
-      var ajaxHeaders = {};
-      if (authToken) ajaxHeaders["x-access-token"] = authToken;
 
       jQuery.ajax({
         url: _this.apiUrl + "/annotations/oaAnno/" + encodeURIComponent(annotationID),
         type: 'DELETE',
         dataType: 'json',
         contentType: "application/json; charset=utf-8",
-        headers: ajaxHeaders,
+        crossDomain: true,
+        xhrFields: {
+          withCredentials: true
+        },
+
         success: function(data) {
           _this.annotationsList = jQuery.grep(_this.annotationsList, function(value, index) {
             return value['@id'] !== annotationID;
           });
+          console.debug(_this.annotationsList);
           if (typeof successCallback === "function") {
             successCallback();
           }
@@ -206,14 +208,17 @@
       delete oaAnnotation.endpoint;
    
       var ajaxHeaders = {};
-      if (authToken) ajaxHeaders["x-access-token"] = authToken;
       jQuery.ajax({
         url: this.apiUrl + "/annotations/oaAnno/" + encodeURIComponent(annotationID),
         type: 'PUT',
         dataType: 'json',
         data: JSON.stringify(oaAnnotation),
+        crossDomain: true,
         contentType: "application/json; charset=utf-8",
-        headers: ajaxHeaders,
+        xhrFields: {
+          withCredentials: true
+        },
+
         success: function(data) {
           oaAnnotation.endpoint = endpoint;
           /*console.log(_this.annotationsList.length);*/
@@ -239,15 +244,17 @@
       var _this = this;
       delete oaAnnotation.endpoint;
 
-      var ajaxHeaders = {};
-      if (authToken) ajaxHeaders["x-access-token"] = authToken;
       jQuery.ajax({
         url: this.apiUrl + "/annotations/oaAnno",
         type: 'POST',
         dataType: 'json',
         data: JSON.stringify(oaAnnotation),
+        crossDomain: true,
         contentType: "application/json; charset=utf-8",
-        headers: ajaxHeaders,
+        xhrFields: {
+          withCredentials: true
+        },
+
         success: function(data) {
           if (typeof successCallback === "function") {
             data.endpoint = _this;
@@ -266,15 +273,18 @@
     },
 
     _updateCanvasPermissions: function(canvasId){
+      console.debug("updateCanvasPermissions");
       var _this = this;
-      var ajaxHeaders = {};
-      if (authToken) ajaxHeaders["x-access-token"] = authToken;
       jQuery.ajax({
         url: _this.apiUrl + "/users/permissionsFor/" + encodeURIComponent(canvasId),
         type: 'GET',
         dataType: 'json',
         contentType: "application/json; charset=utf-8",
-        headers: ajaxHeaders,
+        crossDomain: true,
+        xhrFields: {
+          withCredentials: true
+        },
+
         success: function(data) {
           _this.user.canvasAnnotationPermissions = data;
           var windowObject = _this._getWindowObject(_this.windowID);
@@ -284,10 +294,12 @@
           var enableVisibility = (data.read || data.modify || data.create);
           if(enableVisibility){
             if(!annoButton.is(":visible")){
+              console.debug("show anno button");
               annoButton.show();
             }
           }else{
             if(annoButton.is(":visible")){
+              console.debug("hide anno button");
               annoButton.hide();
             } 
           }
@@ -296,10 +308,12 @@
             // If read or modify permissions: show the pointer
             if(data.read || data.modify){
               if(!windowObject.element.find(".mirador-osd-pointer-mode.hud-control").is(":visible")){
+                console.debug("show pointer");
                 windowObject.element.find(".mirador-osd-pointer-mode.hud-control").show();
               }
             }else{
               if(windowObject.element.find(".mirador-osd-pointer-mode.hud-control").is(":visible")){
+                console.debug("hide pointer");
                 windowObject.element.find(".mirador-osd-pointer-mode.hud-control").hide();
               }
             }
@@ -313,6 +327,7 @@
               windowObject.element.find(".mirador-osd-annotation-controls > .hud-control:not(.mirador-osd-annotations-layer):not(.mirador-osd-pointer-mode):visible").hide();
             }
           }
+
         },
         error: function(msg) {
           _this.user.canvasAnnotationPermissions = null;
