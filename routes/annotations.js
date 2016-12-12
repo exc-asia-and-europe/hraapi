@@ -129,6 +129,9 @@ router.get('/displayAnno/:id/:format?', token.check, function(req, res, next) {
     if(typeof(permissions.read) !== "undefined" && permissions.read === true){
       Annotations.getAnnotationData(req.params.id, function(err, annoData) {
         if (err) return next(err);
+          var regionString = annoData.boundingBox.left + "," + annoData.boundingBox.top + "," + annoData.boundingBox.width + "," + annoData.boundingBox.height;
+          var imgThumbnailIIIFUri = annoData.iiifBaseUri + "/" + regionString + "/!200,200/0/default.jpg";
+          annoData.imgThumbnailIIIFUri = imgThumbnailIIIFUri;
 /*        console.log(annoData);*/
 
         switch(req.params.format){
@@ -136,9 +139,6 @@ router.get('/displayAnno/:id/:format?', token.check, function(req, res, next) {
             res.json(annoData);
             break;
           case "annoInlinePreview":
-            var regionString = annoData.boundingBox.left + "," + annoData.boundingBox.top + "," + annoData.boundingBox.width + "," + annoData.boundingBox.height;
-            var imgThumbnailIIIFUri = annoData.iiifBaseUri + "/" + regionString + "/!200,200/0/default.jpg";
-            annoData.imgThumbnailIIIFUri = imgThumbnailIIIFUri;
             res.render('partials/annotations/annoInlinePreview', annoData);
             break;
           default:
