@@ -41,14 +41,11 @@ var Tools = {
 	},
 */
 	getImages: function(req, res, next){
-		req.images = walkSync(req.body.directory, { globs: ['Y00*/*.tif'] });
+		req.images = walkSync(req.body.directory, { globs: ['**/*.tif'] });
 		var result = [];
 		async.each(req.images, function(path) {
 			var dir = path.substring(0, path.lastIndexOf("/"))
 			var dirParts = dir.split("/");
-
-			console.log(dir);
-			console.log(dirParts);
 			result.push({
 				dir: dir,
 				file: path
