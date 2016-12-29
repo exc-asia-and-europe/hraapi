@@ -38,3 +38,11 @@ jspm_packages
 
 #config file
 config.js
+
+build/
+
+public/javascripts/bootstrap.*
+public/stylesheets/bootstrap.*
+
+public/javascripts/jquery.*
+public/fonts

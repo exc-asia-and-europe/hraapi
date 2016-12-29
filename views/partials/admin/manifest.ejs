@@ -54,10 +54,11 @@
             </div>
             <div class="row">
                 <div class="panel-group" style="padding: 20px;">
-                    <% manifest.sequences.forEach(function(sequence, sequenceIdx){ %>
-                       <% include ../../partials/admin/sequence %>
-                    <% }) %>
-
+                    <% if(manifest.sequences) { %>
+                        <% manifest.sequences.forEach(function(sequence, sequenceIdx){ %>
+                           <% include ../../partials/admin/sequence %>
+                        <% }) %>
+                    <% } %>
                 </div>
             </div>
 <!--                <div class="row">

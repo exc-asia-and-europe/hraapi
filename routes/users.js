@@ -60,8 +60,8 @@ usersRouter.post('/authenticate', passport.authenticate('ldapauth', {session: fa
     });
     // store cookie
     let options = {
+
         maxAge: 1000 * 60 * 60 * 24, // would expire after 24h
-        expires: 0,
 /*        maxAge: 0, // would expire after 24h*/
         httpOnly: true, // The cookie only accessible by the web server
         signed: true // Indicates if the cookie should be signed

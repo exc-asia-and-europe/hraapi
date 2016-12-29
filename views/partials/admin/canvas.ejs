@@ -25,9 +25,11 @@
                             <h4 class="panel-title">Images</h4>
                         </div>
                         <div class="panel-body">  
-                            <% canvas.images.forEach(function(image, imageIdx){ %>
-                               <% include ../../partials/admin/image %>
-                            <% }) %>
+                            <% if(canvas.images){ %>
+                                <% canvas.images.forEach(function(image, imageIdx){ %>
+                                   <% include ../../partials/admin/image %>
+                                <% }) %>
+                            <% } %>
                         </div>
                     </div>
                 </div>

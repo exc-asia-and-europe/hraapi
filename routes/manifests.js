@@ -30,18 +30,27 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 manifestsRouter.get('/', token.check, function(req, res, next) {
   //get the manifests where user is owner or user has read permissions
-  var query = {
-    $and:
-      [
-          {"resourceType": "sc:Manifest"},
-          {"permissions.users.id": req.userMetadata.userId},
-          {"permissions.users.permissions.read": true}
-      ]
-  };
-  Permissions.find(query).distinct('for').exec(function (err, manifestList) {
-    if (err) return next(err);
-    res.json(manifestList);
-  });
+  if(req.userMetadata.admin) {
+    var query = {};
+    Manifests.find(query).distinct('@id').exec(function(err, manifestList) {
+      if (err) return next(err);
+      console.log(manifestList);
+      res.json(manifestList);
+    });
+  } else {
+    var query = {
+      $and:
+        [
+            {"resourceType": "sc:Manifest"},
+            {"permissions.users.id": req.userMetadata.userId},
+            {"permissions.users.permissions.read": true}
+        ]
+    };
+    Permissions.find(query).distinct('for').exec(function (err, manifestList) {
+      if (err) return next(err);
+      res.json(manifestList);
+    });
+  }
 });
 
 /* GET /manifest/:id */
@@ -136,14 +145,14 @@ manifestsRouter.post('/admin/generateManifestFromDirectory', token.check, Users.
   var prefixLength = fsPrefix.length;
   var validResponseTypes = ["application/json", "application/ld+json"];
 
-  req.images = req.images.slice(0, 1);
+  req.images = req.images.slice(0, 10);
   var jobs = [];
   var chunks = [];
   console.info(req.images);
 
   req.images.forEach(function(imageObj, imageIdx) {
     var imageUrl = req.body.directory + "/" + imageObj.file;
-    console.log(imageUrl);
+    /*console.log(imageUrl);*/
     var iiifId = imageUrl.substr(fsPrefix.length);
     var iiifString = encodeURIComponent(encodeURIComponent(iiifId)) + "/info.json";
     var infoURI = iiifPath + "?IIIF=" + iiifString;
@@ -239,22 +248,26 @@ manifestsRouter.post('/admin/generateManifestFromDirectory', token.check, Users.
     });
   });
 
+  var manifests = [];
+
   async.series(seriesParts, function(err, imageObjects) {
     var apiUri = req.protocol + "://" + req.hostname + ":" + req.app.settings.port + req.baseUrl;
-    var manifestId = req.protocol + "://" + req.hostname + ":" + req.app.settings.port + req.baseUrl + "/" + uuid();
     //all Chunks done, so create the manifest and iterate over the images
-    var manifests = [];
-
-    req.images.forEach(function(imageObj, idx) {
-      console.log(idx);
+    console.log("all chunks done")
+    async.eachOf(req.images, function(imageObj, idx, callback) {
+      //console.log(imageObj);
+/*      
+      manifests.push(imageObj);
+*//*    req.images.forEach(function(imageObj, idx) { */
       if(imageObj.error !== undefined || imageObj.iiifInfo === undefined){
         console.log("Error: " + imageObj.iiifInfoUri);
-        /*console.log(imageObj.iiifInfo);*/
+        //console.log(imageObj.iiifInfo);
         return;
       };
 
       //add manifest object for dir
       if(manifests[imageObj.dir] === undefined){
+        var manifestId = req.protocol + "://" + req.hostname + ":" + req.app.settings.port + req.baseUrl + "/" + uuid();
         console.log(imageObj.dir + " = undefined");
 
         manifests[imageObj.dir] = { 
@@ -273,7 +286,6 @@ manifestsRouter.post('/admin/generateManifestFromDirectory', token.check, Users.
           }]
         };
       }
-      console.log(manifests[imageObj.dir]);
 
       var canvasId = apiUri + "/canvas/p" + idx;
       manifests[imageObj.dir].sequences[0].canvases.push({
@@ -302,11 +314,19 @@ manifestsRouter.post('/admin/generateManifestFromDirectory', token.check, Users.
           }
         ]
       });
+/*      manifests.push(idx);*/
+      callback();
+
+    }, function(err){
+/*      console.log(manifests);
+      console.log("HIER");
+      console.log(manifests);
+
+*/
+      /*res.json(manifests);*/
+      res.end();
+/*      console.log("HIER");*/
     });
-    console.log(manifests);
-    console.log("HIER");
-    console.log(manifests.length);
-    res.json(manifests.length);
   });
 
 });

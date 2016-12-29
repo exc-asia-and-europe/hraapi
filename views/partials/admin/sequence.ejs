@@ -12,9 +12,11 @@
             </div>
             <div class="row">
                 <div class="panel-group" style="padding: 20px;">
-                    <% sequence.canvases.forEach(function(canvas, canvasIdx){ %>
-                       <% include ../../partials/admin/canvas %>
-                    <% }) %>
+                    <% if(sequence.canvases){ %>
+                        <% sequence.canvases.forEach(function(canvas, canvasIdx){ %>
+                           <% include ../../partials/admin/canvas %>
+                        <% }) %>
+                    <% } %>
                 </div>
             </div>
         </div>

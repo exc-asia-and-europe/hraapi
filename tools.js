@@ -5,6 +5,7 @@ var mime = require('mime');
 var sizeOf = require('image-size');
 var http = require('http');
 var walkSync = require('walk-sync');
+var async = require('async');
 
 var Tools = {
 	fullUrl: function(req) {
@@ -42,15 +43,23 @@ var Tools = {
 	getImages: function(req, res, next){
 		req.images = walkSync(req.body.directory, { globs: ['Y00*/*.tif'] });
 		var result = [];
-		req.images.forEach(function(path) {
+		async.each(req.images, function(path) {
+			var dir = path.substring(0, path.lastIndexOf("/"))
+			var dirParts = dir.split("/");
+
+			console.log(dir);
+			console.log(dirParts);
 			result.push({
-				dir: path.substring(0, path.lastIndexOf("/")),
+				dir: dir,
 				file: path
 			})
+		},
+		function(err){
+			req.images = result;
+			next();
 		});
-		req.images = result;
 		/*req.images = Tools.getImagesFromDir(req.body.directory).sort();*/
-		next();
+		
 	},
 
 	fetchUrlContent: function(url, callback) {
