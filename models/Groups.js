@@ -15,7 +15,6 @@ var GroupSchema = new mongoose.Schema({
 );
 
 GroupSchema.statics.getUserGroups = function(req, res, next) {
-    console.log(req.userMetadata.userId);
     var query = { 
         $and: [
             {"members.id": req.userMetadata.userId},
